@@ -20,6 +20,7 @@ func main() {
 
 	gitHubUsername := os.Getenv("GITHUB_USERNAME")
 	gitHubPassword := os.Getenv("GITHUB_PASSWORD")
+	gitHubOrg := os.Getenv("GITHUB_ORG")
 
 	bitbucketAPIURL := "https://api.bitbucket.org/2.0/repositories/" + bitbucketUsername + "?q=is_private=true"
 
@@ -64,7 +65,7 @@ func main() {
 
 				req := &Request{
 					Method:   "POST",
-					URL:      "https://api.github.com/user/repos",
+					URL:      fmt.Sprintf("https://api.github.com/orgs/%s/repos", gitHubOrg),
 					Body:     repo,
 					Username: gitHubUsername,
 					Password: gitHubPassword,
@@ -73,7 +74,7 @@ func main() {
 				res := &GitHubError{}
 
 				if err := request(req, res); err != nil {
-					log.Printf("%s: error (%v)", r.Name, res)
+					log.Printf("%s: error with (%v)", r.Name, res)
 					return
 				}
 
@@ -87,7 +88,7 @@ func main() {
 
 				req = &Request{
 					Method:   "PUT",
-					URL:      fmt.Sprintf("https://api.github.com/repos/%s/%s/import", gitHubUsername, r.Name),
+					URL:      fmt.Sprintf("https://api.github.com/repos/%s/%s/import", gitHubOrg, r.Name),
 					Body:     imp,
 					Header:   make(map[string]string),
 					Username: gitHubUsername,
@@ -100,7 +101,7 @@ func main() {
 					return
 				}
 
-				log.Printf("Import was started: https://github.com/%s/%s\n\n", gitHubUsername, r.Name)
+				log.Printf("Import was started: https://github.com/%s/%s\n\n", gitHubOrg, r.Name)
 			}(r)
 		}
 
